@@ -1432,27 +1432,14 @@
                 }
                 initReportPanel() {
                     this.updateReportDate();
-                    this.loadReportData();
                     $('.report-type-btn').off('click.report').on('click.report', e => {
                         e.stopPropagation();
                         const t = $(e.currentTarget);
                         const a = t.data('type');
                         $('.report-type-btn').removeClass('active');
                         t.addClass('active');
-                        this.switchReportType(a);
+                        this.updateReportDate();
                         console.log(`📊 切换报告类型: ${a}`)
-                    });
-                    $('#save-report-btn').off('click.report').on('click.report', e => {
-                        e.stopPropagation();
-                        this.saveReportData();
-                        console.log('💾 保存报告')
-                    });
-                    $('#clear-report-btn').off('click.report').on('click.report', e => {
-                        e.stopPropagation();
-                        if (confirm('确定要清空当前报告内容吗？')) {
-                            this.clearReportData();
-                            console.log('🗑️ 清空报告')
-                        }
                     });
                 }
                 updateReportDate() {
@@ -1472,51 +1459,6 @@
                         dateStr = `${t}年${a}月 第${Math.ceil(n / 7)}周`;
                     }
                     $('#report-date').text(dateStr);
-                }
-                switchReportType(e) {
-                    this.updateReportDate();
-                    const t = e === 'daily' ? '今日目标' : '本周目标';
-                    $('.section-label').first().html(`<i class="fas fa-bullseye"></i> ${t}`);
-                    this.loadReportData();
-                }
-                saveReportData() {
-                    const e = $('.report-type-btn.active').data('type');
-                    const t = {
-                        type: e,
-                        date: new Date().toISOString(),
-                        goals: $('#report-goals').val(),
-                        achievements: $('#report-achievements').val(),
-                        issues: $('#report-issues').val(),
-                        next: $('#report-next').val()
-                    };
-                    try {
-                        localStorage.setItem(`iswp_report_${e}`, JSON.stringify(t));
-                        alert('报告已保存！');
-                    } catch (err) {
-                        console.warn('无法保存报告到localStorage', err);
-                        alert('保存失败，请稍后重试。');
-                    }
-                }
-                loadReportData() {
-                    const e = $('.report-type-btn.active').data('type');
-                    try {
-                        const t = localStorage.getItem(`iswp_report_${e}`);
-                        if (t) {
-                            const a = JSON.parse(t);
-                            $('#report-goals').val(a.goals || '');
-                            $('#report-achievements').val(a.achievements || '');
-                            $('#report-issues').val(a.issues || '');
-                            $('#report-next').val(a.next || '');
-                        }
-                    } catch (err) {
-                        console.warn('无法加载报告数据', err);
-                    }
-                }
-                clearReportData() {
-                    $('#report-goals').val('');
-                    $('#report-achievements').val('');
-                    $('#report-issues').val('');
-                    $('#report-next').val('');
                 }
                 initMapPanel() {
                     this.currentMapIndex = 0;
@@ -1834,7 +1776,6 @@
                     $('#chat-send-btn').off('.chat'),
                     $('#chat-input').off('.chat'),
                     $('.report-type-btn').off('.report'),
-                    $('#save-report-btn, #clear-report-btn').off('.report'),
                     $('#map-prev-btn, #map-next-btn').off('.map'),
                     $('.indicator-dot').off('.map'),
                     $('.map-marker').off('.map'),
@@ -4645,9 +4586,9 @@
 
         .report-meta {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            padding: 16px 20px;
+            padding: 12px 20px;
             background: var(--ui-bg-heavy);
             border-bottom: 1px solid var(--ui-border-color)
         }
@@ -4665,101 +4606,58 @@
             font-size: 14px
         }
 
-        .report-actions {
-            display: flex;
-            gap: 8px
-        }
-
-        .report-action-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            background: var(--ui-bg-light);
-            border: 1px solid var(--ui-border-color);
-            border-radius: 6px;
-            color: var(--text-color);
-            font-size: 12px;
-            cursor: pointer;
-            transition: all .3s ease
-        }
-
-        .report-action-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color)
-        }
-
-        .report-action-btn i {
-            font-size: 12px
-        }
-
-        .report-editor {
+        .report-content {
             flex: 1;
             overflow-y: auto;
             padding: 20px
         }
 
-        .report-editor::-webkit-scrollbar {
+        .report-content::-webkit-scrollbar {
             width: 6px
         }
 
-        .report-editor::-webkit-scrollbar-track {
+        .report-content::-webkit-scrollbar-track {
             background: rgba(0,0,0,.1);
             border-radius: 3px
         }
 
-        .report-editor::-webkit-scrollbar-thumb {
+        .report-content::-webkit-scrollbar-thumb {
             background: var(--primary-color);
             border-radius: 3px
         }
 
-        .editor-section {
-            margin-bottom: 20px
+        .report-section {
+            margin-bottom: 20px;
+            background: var(--ui-bg-heavy);
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid var(--ui-border-color)
         }
 
-        .editor-section:last-child {
+        .report-section:last-child {
             margin-bottom: 0
         }
 
-        .section-label {
+        .section-title {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-size: 14px;
             font-weight: 600;
             color: var(--text-color)
         }
 
-        .section-label i {
+        .section-title i {
             color: var(--primary-color);
             font-size: 14px
         }
 
-        .report-textarea {
-            width: 100%;
-            min-height: 100px;
-            padding: 12px;
-            background: var(--ui-bg-heavy);
-            border: 1px solid var(--ui-border-color);
-            border-radius: 8px;
+        .section-text {
             color: var(--text-color);
             font-size: 13px;
-            line-height: 1.6;
-            resize: vertical;
-            font-family: inherit;
-            transition: all .3s ease
-        }
-
-        .report-textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            background: var(--ui-bg-light)
-        }
-
-        .report-textarea::placeholder {
-            color: rgba(var(--text-color-rgb),.5)
+            line-height: 1.8;
+            padding-left: 22px
         }
 
         .report-stats {
@@ -4822,13 +4720,8 @@
             .report-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 12px
-            }
-
-            .report-meta {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px
+                gap: 12px;
+                padding: 16px
             }
 
             .report-stats {
@@ -4837,6 +4730,11 @@
 
             .stat-card {
                 width: 100%
+            }
+
+            .section-text {
+                padding-left: 10px;
+                font-size: 12px
             }
         }
 
@@ -5187,10 +5085,11 @@
             background: var(--ui-bg);
             border: 1px solid var(--ui-border-color);
             border-radius: 12px;
-            padding: 12px;
+            padding: 14px;
             transition: all .3s ease;
             position: relative;
-            overflow: hidden
+            overflow: visible;
+            min-height: 150px
         }
 
         .day-card::before {
@@ -5262,10 +5161,12 @@
         .event-item {
             display: flex;
             gap: 12px;
-            padding: 8px;
+            padding: 12px;
             background: var(--ui-bg-heavy);
             border-radius: 8px;
-            transition: all .3s ease
+            transition: all .3s ease;
+            min-height: 65px;
+            align-items: flex-start
         }
 
         .event-item:hover {
@@ -5301,7 +5202,10 @@
             font-size: 11px;
             color: var(--text-color);
             opacity: .7;
-            line-height: 1.4
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            min-height: 20px
         }
 
         .empty-day {
@@ -5384,10 +5288,11 @@
             background: var(--ui-bg);
             border: 1px solid var(--ui-border-color);
             border-radius: 12px;
-            padding: 14px;
+            padding: 16px;
             transition: all .3s ease;
             position: relative;
-            overflow: hidden
+            overflow: visible;
+            min-height: 140px
         }
 
         .quest-item::before {
@@ -5483,8 +5388,12 @@
         .quest-description {
             font-size: 13px;
             color: var(--text-color);
-            line-height: 1.5;
-            padding-left: 20px
+            line-height: 1.6;
+            padding-left: 20px;
+            min-height: 60px;
+            max-height: none;
+            word-wrap: break-word;
+            white-space: pre-wrap
         }
 
         .quest-reward {
@@ -6405,45 +6314,53 @@
                         <i class="fas fa-calendar"></i>
                         <span id="report-date">2024年1月1日</span>
                     </div>
-                    <div class="report-actions">
-                        <button class="report-action-btn" id="save-report-btn">
-                            <i class="fas fa-save"></i>
-                            保存
-                        </button>
-                        <button class="report-action-btn" id="clear-report-btn">
-                            <i class="fas fa-eraser"></i>
-                            清空
-                        </button>
-                    </div>
                 </div>
-                <div class="report-editor">
-                    <div class="editor-section">
-                        <div class="section-label">
+                <div class="report-content">
+                    <div class="report-section">
+                        <div class="section-title">
                             <i class="fas fa-bullseye"></i>
                             今日目标
                         </div>
-                        <textarea class="report-textarea" id="report-goals" placeholder="记录今天/本周的主要目标..."></textarea>
+                        <div class="section-text">
+                            1. 完成神秘遗迹探索任务<br>
+                            2. 提升战斗技能等级<br>
+                            3. 收集稀有材料
+                        </div>
                     </div>
-                    <div class="editor-section">
-                        <div class="section-label">
+                    <div class="report-section">
+                        <div class="section-title">
                             <i class="fas fa-check-circle"></i>
                             完成情况
                         </div>
-                        <textarea class="report-textarea" id="report-achievements" placeholder="记录已完成的工作和成就..."></textarea>
+                        <div class="section-text">
+                            ✓ 成功探索了古代遗迹第一层<br>
+                            ✓ 获得了传说级武器<br>
+                            ✓ 完成了公会日常任务<br>
+                            ✓ 帮助村民解决了魔物困扰
+                        </div>
                     </div>
-                    <div class="editor-section">
-                        <div class="section-label">
+                    <div class="report-section">
+                        <div class="section-title">
                             <i class="fas fa-exclamation-triangle"></i>
                             遇到的问题
                         </div>
-                        <textarea class="report-textarea" id="report-issues" placeholder="记录遇到的困难和问题..."></textarea>
+                        <div class="section-text">
+                            • 遗迹第二层的谜题比较复杂，需要更多时间研究<br>
+                            • 队友配合需要加强<br>
+                            • 某些技能冷却时间过长
+                        </div>
                     </div>
-                    <div class="editor-section">
-                        <div class="section-label">
+                    <div class="report-section">
+                        <div class="section-title">
                             <i class="fas fa-lightbulb"></i>
                             下一步计划
                         </div>
-                        <textarea class="report-textarea" id="report-next" placeholder="记录下一步的计划和安排..."></textarea>
+                        <div class="section-text">
+                            1. 组织团队攻略遗迹第二层<br>
+                            2. 学习新的战斗技能<br>
+                            3. 收集更多装备强化材料<br>
+                            4. 参加下周的公会活动
+                        </div>
                     </div>
                 </div>
                 <div class="report-stats">
